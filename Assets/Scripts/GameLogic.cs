@@ -242,6 +242,11 @@ public class GameLogic : MonoBehaviour
         SceneManager.LoadScene("GameOver");
     }
 
+    public void OnBackClick()
+    {
+        SceneManager.LoadScene("Menu");
+    }
+
     public void UpdateHighScore()
     {
         if (currentScore > startingHighScore)

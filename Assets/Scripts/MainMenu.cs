@@ -6,13 +6,13 @@ using UnityEngine.UI;
 public class MainMenu : MonoBehaviour
 {
     public Text highScore;
-    private SettingsManager settingsManager;
     public AudioSource audioSource;
+    public GameSettings gameSettings;
 
     private void Start()
     {
         highScore.text = PlayerPrefs.GetInt("highscore").ToString();
-        GameSettings gameSettings;
+         gameSettings = new GameSettings();
         if (File.Exists(Application.persistentDataPath + "/gamesettings.json") == true)
         {
             gameSettings = JsonUtility.FromJson<GameSettings>(File.ReadAllText(Application.persistentDataPath + "/gamesettings.json"));
@@ -28,7 +28,7 @@ public class MainMenu : MonoBehaviour
 
     public void PlayMulti()
     {
-        SceneManager.LoadScene("MultiGame");
+        SceneManager.LoadScene("MultiLobby");
     }
 
     public void Settings()
@@ -40,4 +40,5 @@ public class MainMenu : MonoBehaviour
     {
         Application.Quit();
     }
+
 }

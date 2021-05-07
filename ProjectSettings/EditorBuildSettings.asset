@@ -12,11 +12,14 @@ EditorBuildSettings:
     path: Assets/Scenes/Game.unity
     guid: 2cda990e2423bbf4892e6590ba056729
   - enabled: 1
-    path: Assets/Scenes/MultiGame.unity
-    guid: a97506b8c4f89264b804bb52ef9bef45
+    path: Assets/Scenes/MultiLobby.unity
+    guid: 5d1c2ccc0c7fd46479100d685738327c
   - enabled: 1
     path: Assets/Scenes/Settings.unity
     guid: a8ce0d092dc591e458e2dc9c5fa9b08f
+  - enabled: 1
+    path: Assets/Scenes/MultiGame.unity
+    guid: a97506b8c4f89264b804bb52ef9bef45
   - enabled: 1
     path: Assets/Scenes/GameOver.unity
     guid: d7a1a1a3ee6ca6b41bd38f3c742f16e2
