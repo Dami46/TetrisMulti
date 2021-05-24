@@ -6,6 +6,11 @@ TagManager:
   tags:
   - Tetromino O
   - Audio
+  - Playground P1
+  - Panel
+  - GameHud
+  - Playground P2
+  - Playground
   layers:
   - Default
   - TransparentFX

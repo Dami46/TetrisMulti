@@ -15,10 +15,10 @@ public class GameLogic : MonoBehaviour
     public bool rotatable = true;
 
     //score
-    public int scoreOneLine = 200;
-    public int scoreTwoLine = 600;
-    public int scoreThreeLine = 1000;
-    public int scoreFourLine = 4000;
+    private int scoreOneLine = 200;
+    private int scoreTwoLine = 600;
+    private int scoreThreeLine = 1000;
+    private int scoreFourLine = 4000;
     private int numberOfFullRows = 0;
     public Text hud_Score;
     public Text hud_Level;
@@ -26,7 +26,7 @@ public class GameLogic : MonoBehaviour
     private int startingHighScore;
 
     //pause
-    public bool isPaused = false;
+    public bool isPaused = true;
     public Text hud_pause;
 
     //level
@@ -54,6 +54,9 @@ public class GameLogic : MonoBehaviour
         SpawnBlock();
         audioSource = GetComponent<AudioSource>();
         startingHighScore = PlayerPrefs.GetInt("highscore");
+        isPaused = true;
+        Time.timeScale = 0;
+        hud_pause.enabled = true;
     }
 
     private void Update()
@@ -90,6 +93,7 @@ public class GameLogic : MonoBehaviour
     private void PauseGame()
     {
         isPaused = true;
+        audioSource = GetComponent<AudioSource>();
         audioSource.Pause();
         Time.timeScale = 0;
         hud_pause.enabled = true;
@@ -98,6 +102,7 @@ public class GameLogic : MonoBehaviour
     private void ResumeGame()
     {
         isPaused = false;
+        audioSource = GetComponent<AudioSource>();
         audioSource.Play();
         Time.timeScale = 1;
         hud_pause.enabled = false;
@@ -222,20 +227,6 @@ public class GameLogic : MonoBehaviour
         return guess;
     }
 
-    public bool CheckIsAboveGrid()
-    {
-        // For every block in the column
-        for (int j = 0; j < width; j++)
-        {
-            // Check to see if there are any blocks in the highest row
-            if (grid[j, height - 1] != null || grid[j, height] != null)
-            {
-                // If there are blocks at the top, the game is over
-                return true;
-            }
-        }
-        return false;
-    }
 
     public void GameOver()
     {
