@@ -2,9 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using MLAPI;
 
-public class MultiTetrisBlock : NetworkBehaviour
+
+public class MultiTetrisBlock : Photon.MonoBehaviour
 {
     MultiGameLogic gameLogic;
     bool movable = true;
@@ -12,6 +12,8 @@ public class MultiTetrisBlock : NetworkBehaviour
     public GameObject rig;
     double height = 30.5f;
     private float fallSpeed;
+    private MultiGameManager gameManager;
+
     //audio
     public AudioClip moveSound;
     public AudioClip rotateSound;
@@ -20,12 +22,16 @@ public class MultiTetrisBlock : NetworkBehaviour
     private GameObject PlaygroudP2;
     private AudioSource audioSource;
 
+    //Photon
+    public PhotonView photonView;
+
+
     // Start is called before the first frame update
     void Start()
     {
         audioSource = GetComponent<AudioSource>();
         gameLogic = FindObjectOfType<MultiGameLogic>();
-
+        gameManager = FindObjectOfType<MultiGameManager>();
         PlaygroudP1 = GameObject.FindGameObjectWithTag("Playground P1");
         PlaygroudP2 = GameObject.FindGameObjectWithTag("Playground P2");
 
@@ -40,7 +46,23 @@ public class MultiTetrisBlock : NetworkBehaviour
             try
             {
                 height = subBlock.position.y;
-                gameLogic.grid[Mathf.FloorToInt(subBlock.position.x), Mathf.FloorToInt(subBlock.position.y)] = subBlock;
+                if (PlaygroudP1)
+                {
+                    if (PhotonNetwork.player.ID == 1)
+                    {
+                        gameLogic.grid[Mathf.FloorToInt(subBlock.position.x), Mathf.FloorToInt(subBlock.position.y)] = subBlock;
+                    }
+
+
+                }
+                if (PlaygroudP2)
+                {
+                    if (PhotonNetwork.player.ID == 2)
+                    {
+                        gameLogic.grid[Mathf.FloorToInt(subBlock.position.x - 21), Mathf.FloorToInt(subBlock.position.y)] = subBlock;
+                    }
+                }
+
                 //Debug.Log(Mathf.FloorToInt(subBlock.position.x) + "  ,  " + Mathf.FloorToInt(subBlock.position.y));
             }
             catch (IndexOutOfRangeException ex)
@@ -52,47 +74,51 @@ public class MultiTetrisBlock : NetworkBehaviour
         }
     }
 
-    bool CheckValid()
+    bool CheckValid(int clientId)
     {
         foreach (Transform subBlock in rig.transform)
         {
-            if (IsHost)
+            if (PlaygroudP1)
             {
-
-                if (subBlock.transform.position.x >= PlaygroudP1.transform.position.x + 8.5f || subBlock.transform.position.x < PlaygroudP1.transform.position.x - 8.5f || subBlock.transform.position.y < 0)
+                if (clientId == 1)
                 {
-                    height = subBlock.position.y;
-                    return false;
+
+                    if (subBlock.transform.position.x >= PlaygroudP1.transform.position.x + 8.5f || subBlock.transform.position.x < PlaygroudP1.transform.position.x - 8.5f || subBlock.transform.position.y < 0)
+                    {
+                        height = subBlock.position.y;
+                        return false;
+                    }
+
+                    if (subBlock.position.y < MultiGameLogic.height && gameLogic.grid[Mathf.FloorToInt(subBlock.position.x), Mathf.FloorToInt(subBlock.position.y)] != null)
+                    {
+
+                        height = subBlock.position.y;
+                        return false;
+                    }
                 }
-
-                if (subBlock.position.y < GameLogic.height && gameLogic.grid[Mathf.FloorToInt(subBlock.position.x), Mathf.FloorToInt(subBlock.position.y)] != null)
+            }
+            if (PlaygroudP2)
+            {
+                if (clientId == 2)
                 {
-                   
-                    height = subBlock.position.y;
-                    return false;
+                    if (subBlock.transform.position.x >= PlaygroudP2.transform.position.x + 8.5f || subBlock.transform.position.x < PlaygroudP2.transform.position.x - 8.5f || subBlock.transform.position.y < 0)
+                    {
+                        height = subBlock.position.y;
+                        return false;
+                    }
+
+                   // Debug.Log(Mathf.FloorToInt(subBlock.position.x) + "----" + Mathf.FloorToInt(subBlock.position.y));
+                    // Debug.Log(gameLogic.grid[Mathf.FloorToInt(subBlock.position.x), Mathf.FloorToInt(subBlock.position.y)]);
+
+                    if (subBlock.position.y < MultiGameLogic.height && gameLogic.grid[Mathf.FloorToInt(subBlock.position.x - 21), Mathf.FloorToInt(subBlock.position.y)] != null)
+                    {
+                        height = subBlock.position.y;
+                        return false;
+                    }
                 }
             }
 
-            if (IsClient && !IsHost)
-            {
-
-                if (subBlock.transform.position.x >= PlaygroudP2.transform.position.x + 8.5f || subBlock.transform.position.x < PlaygroudP2.transform.position.x - 8.5f || subBlock.transform.position.y < 0)
-                {
-                    height = subBlock.position.y;
-                    return false;
-                }
-
-                // Debug.Log(Mathf.FloorToInt(subBlock.position.x) + "----" + Mathf.FloorToInt(subBlock.position.y));
-                // Debug.Log(gameLogic.grid[Mathf.FloorToInt(subBlock.position.x), Mathf.FloorToInt(subBlock.position.y)]);
-
-                if (subBlock.position.y < GameLogic.height && gameLogic.grid[Mathf.FloorToInt(subBlock.position.x ), Mathf.FloorToInt(subBlock.position.y)] != null)
-                {
-                    height = subBlock.position.y;
-                    return false;
-                }
-            }
         }
-
 
         return true;
     }
@@ -102,111 +128,114 @@ public class MultiTetrisBlock : NetworkBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (movable  && !gameLogic.isPaused)
+        if (photonView.isMine)
         {
-            if (!IsOwner) { return; }
-            //update the timer
-            timer += 1 * Time.deltaTime;
 
-            //drop
-            if (Input.GetKey(KeyCode.DownArrow) && timer > GameLogic.quickDropTime)
+            if (movable && !gameManager.isPaused)
             {
-                gameObject.transform.position -= new Vector3(0, 1, 0);
-                timer = 0;
-                if (Input.GetKeyDown(KeyCode.DownArrow))
-                {
-                    audioSource.PlayOneShot(moveSound);
-                }
 
-                if (!CheckValid())
-                {
-                    movable = false;
-                    gameObject.transform.position += new Vector3(0, 1, 0);
+                //update the timer
+                timer += 1 * Time.deltaTime;
 
-                    if (height == 30.5 || height == 28.5 || height == 29.5)
+                //drop
+                if (Input.GetKey(KeyCode.DownArrow) && timer > MultiGameLogic.quickDropTime)
+                {
+                    gameObject.transform.position -= new Vector3(0, 1, 0);
+                    timer = 0;
+                    if (Input.GetKeyDown(KeyCode.DownArrow))
                     {
-                       // gameLogic.GameOver();
+                        audioSource.PlayOneShot(moveSound);
                     }
-                    RegiserBlock();
-                    audioSource.PlayOneShot(landSound);
-                    gameLogic.currentScore += 10;
-                    gameLogic.UpdatePlayground();
-                    
-                    Debug.Log("LocalClientID przy spawnie blocku" + NetworkManager.Singleton.LocalClientId);
-                    gameLogic.SpawnBlock(NetworkManager.Singleton.LocalClientId);
 
-                }
-            }
-            else if (timer > GameLogic.dropTime)
-            {
-                gameObject.transform.position -= new Vector3(0, 1, 0);
-                timer = 0;
-                if (!CheckValid())
-                {
-                    movable = false;
-                    gameObject.transform.position += new Vector3(0, 1, 0);
-
-                    if (height == 30.5 || height == 28.5 || height == 29.5)
+                    if (!CheckValid(PhotonNetwork.player.ID))
                     {
-                        //gameLogic.GameOver();
+                        movable = false;
+                        gameObject.transform.position += new Vector3(0, 1, 0);
+
+                        if (height == 30.5 || height == 28.5 || height == 29.5)
+                        {
+                             gameLogic.GameOver();
+                        }
+                        RegiserBlock();
+                        audioSource.PlayOneShot(landSound);
+                        gameLogic.currentScore += 10;
+                        gameLogic.UpdatePlayground();
+
+                        gameLogic.SpawnBlock(PhotonNetwork.player.ID);
+
                     }
-                    RegiserBlock();
-                    gameLogic.currentScore += 10;
-                    gameLogic.UpdatePlayground();
-
-                    Debug.Log("LocalClientID przy spawnie blocku" + NetworkManager.Singleton.LocalClientId);
-                    gameLogic.SpawnBlock(NetworkManager.Singleton.LocalClientId);
-
                 }
-            }
-
-
-            //sideways
-            if (Input.GetKeyDown(KeyCode.LeftArrow))
-            {
-                gameObject.transform.position -= new Vector3(1, 0, 0);
-                if (!CheckValid())
+                else if (timer > MultiGameLogic.dropTime)
                 {
-                    gameObject.transform.position += new Vector3(1, 0, 0);
+                    gameObject.transform.position -= new Vector3(0, 1, 0);
+                    timer = 0;
+                    if (!CheckValid(PhotonNetwork.player.ID))
+                    {
+                        movable = false;
+                        gameObject.transform.position += new Vector3(0, 1, 0);
 
-                }
-                else
-                {
-                    audioSource.PlayOneShot(moveSound);
+                        if (height == 30.5 || height == 28.5 || height == 29.5)
+                        {
+                            gameLogic.GameOver();
+                        }
+                        RegiserBlock();
+                        gameLogic.currentScore += 10;
+                        gameLogic.UpdatePlayground();
+
+                        gameLogic.SpawnBlock(PhotonNetwork.player.ID);
+
+                    }
                 }
 
-            }
-            else if (Input.GetKeyDown(KeyCode.RightArrow))
-            {
-                gameObject.transform.position += new Vector3(1, 0, 0);
-                if (!CheckValid())
+
+                //sideways
+                if (Input.GetKeyDown(KeyCode.LeftArrow))
                 {
                     gameObject.transform.position -= new Vector3(1, 0, 0);
-                }
-                else
-                {
-                    audioSource.PlayOneShot(moveSound);
-                }
-
-            }
-
-
-            //rotation
-            if (Input.GetKeyDown(KeyCode.Space))
-            {
-                if (gameLogic.rotatable)
-                {
-                    gameObject.transform.eulerAngles -= new Vector3(0, 0, 90);
-                    if (!CheckValid())
+                    if (!CheckValid(PhotonNetwork.player.ID))
                     {
-                        gameObject.transform.eulerAngles += new Vector3(0, 0, 90);
+                        gameObject.transform.position += new Vector3(1, 0, 0);
+
                     }
                     else
                     {
-                        audioSource.PlayOneShot(rotateSound);
+                        audioSource.PlayOneShot(moveSound);
+                    }
+
+                }
+                else if (Input.GetKeyDown(KeyCode.RightArrow))
+                {
+                    gameObject.transform.position += new Vector3(1, 0, 0);
+                    if (!CheckValid(PhotonNetwork.player.ID))
+                    {
+                        gameObject.transform.position -= new Vector3(1, 0, 0);
+                    }
+                    else
+                    {
+                        audioSource.PlayOneShot(moveSound);
+                    }
+
+                }
+
+
+                //rotation
+                if (Input.GetKeyDown(KeyCode.Space))
+                {
+                    if (gameLogic.rotatable)
+                    {
+                        gameObject.transform.eulerAngles -= new Vector3(0, 0, 90);
+                        if (!CheckValid(PhotonNetwork.player.ID))
+                        {
+                            gameObject.transform.eulerAngles += new Vector3(0, 0, 90);
+                        }
+                        else
+                        {
+                            audioSource.PlayOneShot(rotateSound);
+                        }
                     }
                 }
             }
+
         }
     }
 }

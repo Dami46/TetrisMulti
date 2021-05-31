@@ -11,6 +11,8 @@ TagManager:
   - GameHud
   - Playground P2
   - Playground
+  - Pauza
+  - PauzaP2
   layers:
   - Default
   - TransparentFX

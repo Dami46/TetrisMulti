@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class TetrisBlock : MonoBehaviour
 {
-    GameLogic gameLogic;
+    TetrisGameLogic gameLogic;
     bool movable = true;
     float timer = 0f;
     public GameObject rig;
@@ -23,7 +23,7 @@ public class TetrisBlock : MonoBehaviour
     void Start()
     {
         audioSource = GetComponent<AudioSource>();
-        gameLogic = FindObjectOfType<GameLogic>();
+        gameLogic = FindObjectOfType<TetrisGameLogic>();
     }
 
 
@@ -41,7 +41,7 @@ public class TetrisBlock : MonoBehaviour
             {
                 ex.ToString();
             }
-            
+
 
         }
     }
@@ -50,14 +50,13 @@ public class TetrisBlock : MonoBehaviour
     {
         foreach (Transform subBlock in rig.transform)
         {
-            if (subBlock.transform.position.x >= GameLogic.width || subBlock.transform.position.x < 0 || subBlock.transform.position.y < 0)
+            if (subBlock.transform.position.x >= TetrisGameLogic.width || subBlock.transform.position.x < 0 || subBlock.transform.position.y < 0)
             {
                 height = subBlock.position.y;
                 return false;
             }
 
-            Debug.Log(Mathf.FloorToInt(subBlock.position.x) + ",,,," + Mathf.FloorToInt(subBlock.position.y));
-            if (subBlock.position.y < GameLogic.height && gameLogic.grid[Mathf.FloorToInt(subBlock.position.x), Mathf.FloorToInt(subBlock.position.y)] != null)
+            if (subBlock.position.y < TetrisGameLogic.height && gameLogic.grid[Mathf.FloorToInt(subBlock.position.x), Mathf.FloorToInt(subBlock.position.y)] != null)
             {
                 height = subBlock.position.y;
                 return false;
@@ -75,7 +74,7 @@ public class TetrisBlock : MonoBehaviour
             timer += 1 * Time.deltaTime;
 
             //drop
-            if (Input.GetKey(KeyCode.DownArrow) && timer > GameLogic.quickDropTime)
+            if (Input.GetKey(KeyCode.DownArrow) && timer > TetrisGameLogic.quickDropTime)
             {
                 gameObject.transform.position -= new Vector3(0, 1, 0);
                 timer = 0;
@@ -97,12 +96,12 @@ public class TetrisBlock : MonoBehaviour
                     audioSource.PlayOneShot(landSound);
                     gameLogic.currentScore += 10;
                     gameLogic.UpdatePlayground();
-                    FindObjectOfType<GameLogic>().UpdateHighScore();
+                    FindObjectOfType<TetrisGameLogic>().UpdateHighScore();
                     gameLogic.SpawnBlock();
 
                 }
             }
-            else if (timer > GameLogic.dropTime)
+            else if (timer > TetrisGameLogic.dropTime)
             {
                 gameObject.transform.position -= new Vector3(0, 1, 0);
                 timer = 0;
@@ -117,7 +116,7 @@ public class TetrisBlock : MonoBehaviour
                     RegiserBlock();
                     gameLogic.currentScore += 10;
                     gameLogic.UpdatePlayground();
-                    FindObjectOfType<GameLogic>().UpdateHighScore();
+                    FindObjectOfType<TetrisGameLogic>().UpdateHighScore();
                     gameLogic.SpawnBlock();
 
                 }
@@ -157,7 +156,7 @@ public class TetrisBlock : MonoBehaviour
             //rotation
             if (Input.GetKeyDown(KeyCode.Space))
             {
-                if(gameLogic.rotatable)
+                if (gameLogic.rotatable)
                 {
                     rig.transform.eulerAngles -= new Vector3(0, 0, 90);
                     if (!CheckValid())

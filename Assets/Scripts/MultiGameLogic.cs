@@ -1,13 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using MLAPI;
-using MLAPI.Messaging;
-using MLAPI.NetworkVariable;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public class MultiGameLogic : NetworkBehaviour
+public class MultiGameLogic : MonoBehaviour
 {
     public static float dropTime = 1.0f;
     public static float quickDropTime = 0.05f;
@@ -30,9 +27,7 @@ public class MultiGameLogic : NetworkBehaviour
     public Text hud_Level;
     public int currentScore = 0;
 
-    //pause
-    public bool isPaused = true;
-    public Text hud_pause;
+
 
     //level
     public int currentLevel = 0;
@@ -56,18 +51,11 @@ public class MultiGameLogic : NetworkBehaviour
         hud_Level.text = "Level: 0";
         hud_Score.text = "Score: 0";
 
-        isPaused = true;
-        Time.timeScale = 0;
-        hud_pause.enabled = true;
-
-        PlaygroudP1 = GameObject.FindGameObjectWithTag("Playground P1");
-        PlaygroudP2 = GameObject.FindGameObjectWithTag("Playground P2");
-    
     }
 
     private void Update()
     {
-        CheckUserInput();
+       
     }
 
     void UpdateLevel()
@@ -80,44 +68,6 @@ public class MultiGameLogic : NetworkBehaviour
         dropTime = 1.0f - ((float)currentLevel * 0.1f);
     }
 
-    void CheckUserInput()
-    {
-        if (Input.GetKeyUp(KeyCode.P))
-        {
-            if (Time.timeScale == 1)
-            {
-                PauseGameClientRpc();
-            }
-            else
-            {
-                ResumeGameClientRpc();
-            }
-
-        }
-    }
-
-    [ClientRpc]
-    private void PauseGameClientRpc()
-    {
-        isPaused = true;
-        //audioSource = GetComponent<AudioSource>();
-        // audioSource.Pause();
-
-        hud_pause.enabled = true;
-        Time.timeScale = 0;
-
-    }
-    [ClientRpc]
-    private void ResumeGameClientRpc()
-    {
-        isPaused = false;
-        //audioSource = GetComponent<AudioSource>();
-        //audioSource.Play();
-        
-        hud_pause.enabled = false;
-        Time.timeScale = 1;
-
-    }
 
     public void UpdatePlayground()
     {
@@ -192,17 +142,24 @@ public class MultiGameLogic : NetworkBehaviour
         }
     }
 
-    public void SpawnBlock(ulong ClientId)
+    public void SpawnBlock(int playerID)
     {
+        PlaygroudP1 = GameObject.FindGameObjectWithTag("Playground P1");
+        PlaygroudP2 = GameObject.FindGameObjectWithTag("Playground P2");
         rotatable = true;
         if (!gameStarted)
         {
-          
+            gameStarted = true;
             float guess = RandomTetronimo();
 
-            nextTetronimo = Instantiate(blocks[Mathf.FloorToInt(guess)]);
-            nextTetronimo.GetComponent<NetworkObject>().SpawnAsPlayerObject(ClientId, null, true);
-            Debug.Log("Next Tetromino 1 " +  nextTetronimo.GetComponent<NetworkObject>().OwnerClientId);
+            if (playerID == 1)
+            {   
+                nextTetronimo = PhotonNetwork.Instantiate(PlaygroudP1.GetComponent<MultiGameLogic>().blocks[Mathf.FloorToInt(guess)].name, new Vector2(8.5f, 30.5f), Quaternion.identity, 0);
+            }
+            else
+            {
+                nextTetronimo = PhotonNetwork.Instantiate(PlaygroudP2.GetComponent<MultiGameLogic>().blocks[Mathf.FloorToInt(guess)].name, new Vector2(29.5f, 30.5f), Quaternion.identity, 0);
+            }
 
             if (nextTetronimo.tag == "Tetromino O")
             {
@@ -210,39 +167,27 @@ public class MultiGameLogic : NetworkBehaviour
             }
 
             guess = RandomTetronimo();
-            previewTetronimo = Instantiate(blocks[Mathf.FloorToInt(guess)]);
-            previewTetronimo.GetComponent<NetworkObject>().SpawnAsPlayerObject(ClientId, null, true);
-
-            Debug.Log("Preview Tetromino 1 " + nextTetronimo.GetComponent<NetworkObject>().OwnerClientId);
-
-            if (ClientId == 0)
+            if (playerID == 1)
             {
-                Debug.Log(nextTetronimo.GetComponent<NetworkObject>().OwnerClientId + " HOST");
-                previewTetronimo.transform.localPosition = new Vector2(-8, 26);
+                previewTetronimo = PhotonNetwork.Instantiate(PlaygroudP1.GetComponent<MultiGameLogic>().blocks[Mathf.FloorToInt(guess)].name, new Vector2(-8, 26), Quaternion.identity, 0);
             }
-            else if (ClientId == 2)
+            else
             {
-                gameStarted = true;
-                Debug.Log(nextTetronimo.GetComponent<NetworkObject>().OwnerClientId + " CLIENT");
-                Debug.Log("Player objects : " + NetworkManager.Singleton.ConnectedClients[ClientId].PlayerObject);
-                previewTetronimo.GetComponent<MultiGameLogic>().SubmitPositionRequestServerRpc();
-
-                previewTetronimo.transform.localPosition = new Vector2(45, 26);
+                previewTetronimo = PhotonNetwork.Instantiate(PlaygroudP2.GetComponent<MultiGameLogic>().blocks[Mathf.FloorToInt(guess)].name, new Vector2(44, 26), Quaternion.identity, 0);
             }
 
-            previewTetronimo.GetComponent<NetworkObject>().enabled = false;
+            previewTetronimo.GetComponent<MultiTetrisBlock>().enabled = false;
         }
         else
         {
-            if (ClientId == 0)
+            if (playerID == 1)
             {
                 previewTetronimo.transform.localPosition = new Vector2(8.5f, 30.5f);
             }
-            else if (ClientId == 2)
+            else
             {
                 previewTetronimo.transform.localPosition = new Vector2(29.5f, 30.5f);
             }
-
             nextTetronimo = previewTetronimo;
             nextTetronimo.GetComponent<MultiTetrisBlock>().enabled = true;
 
@@ -250,22 +195,18 @@ public class MultiGameLogic : NetworkBehaviour
             {
                 rotatable = false;
             }
+
             float guess = RandomTetronimo();
-            previewTetronimo = Instantiate(blocks[Mathf.FloorToInt(guess)]);
-            previewTetronimo.GetComponent<NetworkObject>().SpawnAsPlayerObject(ClientId, null, true);
-
-            Debug.Log("Preview Tetromino 2 " + nextTetronimo.GetComponent<NetworkObject>().OwnerClientId);
-
-            if (ClientId == 0)
+            if (playerID == 1)
             {
-                previewTetronimo.transform.localPosition = new Vector2(-8, 26);
+                previewTetronimo = PhotonNetwork.Instantiate(PlaygroudP1.GetComponent<MultiGameLogic>().blocks[Mathf.FloorToInt(guess)].name, new Vector2(-8, 26), Quaternion.identity, 0);
             }
-            else if (ClientId == 2)
+            else
             {
-                previewTetronimo.GetComponent<NetworkObject>().GetComponent<MultiGameLogic>().SubmitPositionRequestServerRpc();
-                previewTetronimo.transform.localPosition = new Vector2(45, 26);
+                previewTetronimo = PhotonNetwork.Instantiate(PlaygroudP2.GetComponent<MultiGameLogic>().blocks[Mathf.FloorToInt(guess)].name, new Vector2(44, 26), Quaternion.identity, 0);
             }
-            previewTetronimo.GetComponent<NetworkObject>().enabled = false;
+
+            previewTetronimo.GetComponent<MultiTetrisBlock>().enabled = false;
         }
 
 
@@ -279,22 +220,12 @@ public class MultiGameLogic : NetworkBehaviour
         return guess;
     }
 
-    [ServerRpc]
-    void SubmitPositionRequestServerRpc(ServerRpcParams rpcParams = default)
-    {
-        
-        previewTetronimo.transform.localPosition = new Vector2(45, 26);
-        previewTetronimo.GetComponent<NetworkObject>().enabled = false;
-    }
+
+
 
     public void GameOver()
     {
         SceneManager.LoadScene("GameOver");
-    }
-
-    public void OnBackClick()
-    {
-        SceneManager.LoadScene("Menu");
     }
 
 
@@ -323,7 +254,7 @@ public class MultiGameLogic : NetworkBehaviour
 
             }
             numberOfFullRows = 0;
-            audioSource.PlayOneShot(clearLineSound);
+            //audioSource.PlayOneShot(clearLineSound);
         }
     }
     public void UpdateUi()
@@ -332,17 +263,5 @@ public class MultiGameLogic : NetworkBehaviour
         hud_Level.text = "Level: " + currentLevel.ToString();
     }
 
-    public void Leave()
-    {
-        if (NetworkManager.Singleton.IsHost)
-        {
-            NetworkManager.Singleton.StopHost();
-            SceneManager.LoadScene("Menu");
-        }
-        else if (NetworkManager.Singleton.IsClient)
-        {
-            NetworkManager.Singleton.StopClient();
-            SceneManager.LoadScene("Menu");
-        }
-    }
+  
 }
