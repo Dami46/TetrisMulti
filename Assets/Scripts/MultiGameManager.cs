@@ -8,7 +8,6 @@ public class MultiGameManager : Photon.MonoBehaviour
 {
     public GameObject[] PlayerPrefabs;
     public GameObject StartCanvas;
-    private MultiGameLogic gameLogic;
 
     private PhotonView photonView;
     private GameObject playerReady;
@@ -59,21 +58,11 @@ public class MultiGameManager : Photon.MonoBehaviour
         {
             case 1:
                 GameObject player1 =  PhotonNetwork.Instantiate(PlayerPrefabs[0].name, new Vector2(8.5f, 15), Quaternion.identity, 0);
-               
-                gameLogic = PlayerPrefabs[0].GetComponent<MultiGameLogic>();
-                gameLogic.SpawnBlock(1);
-                photonView = player1.GetComponent<PhotonView>();
-               // photonView.RPC("PlayerP1Unready", PhotonTargets.All);
                 PlayerP1Unready();
                 break;
 
             case 2:
                 GameObject player2 = PhotonNetwork.Instantiate(PlayerPrefabs[1].name, new Vector2(29.5f, 15), Quaternion.identity, 0);
- 
-                gameLogic = PlayerPrefabs[1].GetComponent<MultiGameLogic>();
-                gameLogic.SpawnBlock(2);
-                photonView = player2.GetComponent<PhotonView>();
-                //photonView.RPC("PlayerP2Unready", PhotonTargets.All);
                 PlayerP2Unready();
                 break;
 

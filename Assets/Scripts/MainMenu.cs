@@ -12,13 +12,13 @@ public class MainMenu : MonoBehaviour
     private void Start()
     {
         highScore.text = PlayerPrefs.GetInt("highscore").ToString();
-         gameSettings = new GameSettings();
+        gameSettings = new GameSettings();
         if (File.Exists(Application.persistentDataPath + "/gamesettings.json") == true)
         {
             gameSettings = JsonUtility.FromJson<GameSettings>(File.ReadAllText(Application.persistentDataPath + "/gamesettings.json"));
             audioSource.volume = gameSettings.audioVolume;
         }
-        
+
     }
 
     public void PlaySingle()

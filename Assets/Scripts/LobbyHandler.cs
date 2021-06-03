@@ -16,7 +16,6 @@ public class LobbyHandler : MonoBehaviour
     public Text hud_error;
     private GameObject PlaygroudP1;
     private GameObject PlaygroudP2;
-    private MultiGameLogic gameLogic;
 
 
     private void Awake()

@@ -82,7 +82,7 @@ public class MultiTetrisBlock : Photon.MonoBehaviour
             {
                 if (clientId == 1)
                 {
-
+                    gameLogic = PlaygroudP1.GetComponent<MultiGameLogic>();
                     if (subBlock.transform.position.x >= PlaygroudP1.transform.position.x + 8.5f || subBlock.transform.position.x < PlaygroudP1.transform.position.x - 8.5f || subBlock.transform.position.y < 0)
                     {
                         height = subBlock.position.y;
@@ -101,6 +101,7 @@ public class MultiTetrisBlock : Photon.MonoBehaviour
             {
                 if (clientId == 2)
                 {
+                    gameLogic = PlaygroudP2.GetComponent<MultiGameLogic>();
                     if (subBlock.transform.position.x >= PlaygroudP2.transform.position.x + 8.5f || subBlock.transform.position.x < PlaygroudP2.transform.position.x - 8.5f || subBlock.transform.position.y < 0)
                     {
                         height = subBlock.position.y;
@@ -219,7 +220,7 @@ public class MultiTetrisBlock : Photon.MonoBehaviour
 
 
                 //rotation
-                if (Input.GetKeyDown(KeyCode.Space))
+                if (Input.GetKeyDown(KeyCode.UpArrow))
                 {
                     if (gameLogic.rotatable)
                     {

@@ -50,6 +50,13 @@ public class MultiGameLogic : MonoBehaviour
         currentScore = 0;
         hud_Level.text = "Level: 0";
         hud_Score.text = "Score: 0";
+        if(PhotonNetwork.player.ID == 1 & this.tag == "Playground P1"){
+            SpawnBlock(1);
+        }
+        else if(PhotonNetwork.player.ID == 2 & this.tag == "Playground P2"){
+            SpawnBlock(2);
+        }
+        
 
     }
 
@@ -154,11 +161,11 @@ public class MultiGameLogic : MonoBehaviour
 
             if (playerID == 1)
             {   
-                nextTetronimo = PhotonNetwork.Instantiate(PlaygroudP1.GetComponent<MultiGameLogic>().blocks[Mathf.FloorToInt(guess)].name, new Vector2(8.5f, 30.5f), Quaternion.identity, 0);
+                this.nextTetronimo = PhotonNetwork.Instantiate(this.blocks[Mathf.FloorToInt(guess)].name, new Vector2(8.5f, 30.5f), Quaternion.identity, 0);
             }
             else
             {
-                nextTetronimo = PhotonNetwork.Instantiate(PlaygroudP2.GetComponent<MultiGameLogic>().blocks[Mathf.FloorToInt(guess)].name, new Vector2(29.5f, 30.5f), Quaternion.identity, 0);
+                this.nextTetronimo = PhotonNetwork.Instantiate(this.blocks[Mathf.FloorToInt(guess)].name, new Vector2(29.5f, 30.5f), Quaternion.identity, 0);
             }
 
             if (nextTetronimo.tag == "Tetromino O")
@@ -169,27 +176,27 @@ public class MultiGameLogic : MonoBehaviour
             guess = RandomTetronimo();
             if (playerID == 1)
             {
-                previewTetronimo = PhotonNetwork.Instantiate(PlaygroudP1.GetComponent<MultiGameLogic>().blocks[Mathf.FloorToInt(guess)].name, new Vector2(-8, 26), Quaternion.identity, 0);
+                this.previewTetronimo = PhotonNetwork.Instantiate(this.blocks[Mathf.FloorToInt(guess)].name, new Vector2(-8, 26), Quaternion.identity, 0);
             }
             else
             {
-                previewTetronimo = PhotonNetwork.Instantiate(PlaygroudP2.GetComponent<MultiGameLogic>().blocks[Mathf.FloorToInt(guess)].name, new Vector2(44, 26), Quaternion.identity, 0);
+                this.previewTetronimo = PhotonNetwork.Instantiate(this.blocks[Mathf.FloorToInt(guess)].name, new Vector2(44, 26), Quaternion.identity, 0);
             }
 
-            previewTetronimo.GetComponent<MultiTetrisBlock>().enabled = false;
+            this.previewTetronimo.GetComponent<MultiTetrisBlock>().enabled = false;
         }
         else
         {
             if (playerID == 1)
             {
-                previewTetronimo.transform.localPosition = new Vector2(8.5f, 30.5f);
+                this.previewTetronimo.transform.localPosition = new Vector2(8.5f, 30.5f);
             }
             else
             {
-                previewTetronimo.transform.localPosition = new Vector2(29.5f, 30.5f);
+                this.previewTetronimo.transform.localPosition = new Vector2(29.5f, 30.5f);
             }
-            nextTetronimo = previewTetronimo;
-            nextTetronimo.GetComponent<MultiTetrisBlock>().enabled = true;
+            this.nextTetronimo = previewTetronimo;
+            this.nextTetronimo.GetComponent<MultiTetrisBlock>().enabled = true;
 
             if (nextTetronimo.tag == "Tetromino O")
             {
@@ -199,14 +206,14 @@ public class MultiGameLogic : MonoBehaviour
             float guess = RandomTetronimo();
             if (playerID == 1)
             {
-                previewTetronimo = PhotonNetwork.Instantiate(PlaygroudP1.GetComponent<MultiGameLogic>().blocks[Mathf.FloorToInt(guess)].name, new Vector2(-8, 26), Quaternion.identity, 0);
+                this.previewTetronimo = PhotonNetwork.Instantiate(this.blocks[Mathf.FloorToInt(guess)].name, new Vector2(-8, 26), Quaternion.identity, 0);
             }
             else
             {
-                previewTetronimo = PhotonNetwork.Instantiate(PlaygroudP2.GetComponent<MultiGameLogic>().blocks[Mathf.FloorToInt(guess)].name, new Vector2(44, 26), Quaternion.identity, 0);
+                this.previewTetronimo = PhotonNetwork.Instantiate(this.blocks[Mathf.FloorToInt(guess)].name, new Vector2(44, 26), Quaternion.identity, 0);
             }
 
-            previewTetronimo.GetComponent<MultiTetrisBlock>().enabled = false;
+            this.previewTetronimo.GetComponent<MultiTetrisBlock>().enabled = false;
         }
 
 
