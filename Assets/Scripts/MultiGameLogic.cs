@@ -49,18 +49,17 @@ public class MultiGameLogic : MonoBehaviour
     void Start()
     {
         currentScore = 0;
-        hud_Level.text = "Level: 0";
-        hud_Score.text = "Score: 0";
-
-        gameStarted = false;
-        gameManager = FindObjectOfType<MultiGameManager>();
-
-        if (PhotonNetwork.player.ID == 1 & this.tag == "Playground P1"){
+        if(PhotonNetwork.player.ID == 1 & this.tag == "Playground P1"){
+            hud_Score = GameObject.FindGameObjectWithTag("score_text P1").GetComponent<Text>();
             SpawnBlock(1);
         }
         else if(PhotonNetwork.player.ID == 2 & this.tag == "Playground P2"){
+            hud_Score = GameObject.FindGameObjectWithTag("score_text P2").GetComponent<Text>();
             SpawnBlock(2);
         }
+
+        hud_Level.text = "Level: 0";
+        hud_Score.text = "Score: 0";
         
 
     }
@@ -269,11 +268,20 @@ public class MultiGameLogic : MonoBehaviour
             numberOfFullRows = 0;
             //audioSource.PlayOneShot(clearLineSound);
         }
+
+        GetComponent<PhotonView>().RPC("UpdatePoints", PhotonTargets.All, PhotonNetwork.player.ID, currentScore, currentLevel);
     }
+
     public void UpdateUi()
     {
         hud_Score.text = "Score: " + currentScore.ToString();
         hud_Level.text = "Level: " + currentLevel.ToString();
+    }
+
+    [PunRPC]
+    private void UpdatePoints(int player, int points, int level){
+        GameObject.FindGameObjectWithTag(string.Format("score_text P{0}", player)).GetComponent<Text>().text = "Score: " + points.ToString();
+        GameObject.FindGameObjectWithTag(string.Format("level_text P{0}", player)).GetComponent<Text>().text = "Level: " + level.ToString();
     }
 
   
