@@ -63,7 +63,6 @@ public class MultiTetrisBlock : Photon.MonoBehaviour
                     }
                 }
 
-                //Debug.Log(Mathf.FloorToInt(subBlock.position.x) + "  ,  " + Mathf.FloorToInt(subBlock.position.y));
             }
             catch (IndexOutOfRangeException ex)
             {
@@ -107,9 +106,7 @@ public class MultiTetrisBlock : Photon.MonoBehaviour
                         height = subBlock.position.y;
                         return false;
                     }
-
-                   // Debug.Log(Mathf.FloorToInt(subBlock.position.x) + "----" + Mathf.FloorToInt(subBlock.position.y));
-                    // Debug.Log(gameLogic.grid[Mathf.FloorToInt(subBlock.position.x), Mathf.FloorToInt(subBlock.position.y)]);
+                
 
                     if (subBlock.position.y < MultiGameLogic.height && gameLogic.grid[Mathf.FloorToInt(subBlock.position.x - 21), Mathf.FloorToInt(subBlock.position.y)] != null)
                     {

@@ -14,6 +14,7 @@ public class MultiGameLogic : MonoBehaviour
     public bool rotatable = true;
     private GameObject PlaygroudP1;
     private GameObject PlaygroudP2;
+    private MultiGameManager gameManager;
 
     public Button leaveButton;
 
@@ -50,7 +51,11 @@ public class MultiGameLogic : MonoBehaviour
         currentScore = 0;
         hud_Level.text = "Level: 0";
         hud_Score.text = "Score: 0";
-        if(PhotonNetwork.player.ID == 1 & this.tag == "Playground P1"){
+
+        gameStarted = false;
+        gameManager = FindObjectOfType<MultiGameManager>();
+
+        if (PhotonNetwork.player.ID == 1 & this.tag == "Playground P1"){
             SpawnBlock(1);
         }
         else if(PhotonNetwork.player.ID == 2 & this.tag == "Playground P2"){
@@ -232,7 +237,8 @@ public class MultiGameLogic : MonoBehaviour
 
     public void GameOver()
     {
-        SceneManager.LoadScene("GameOver");
+        PhotonNetwork.LeaveRoom();
+        PhotonNetwork.LoadLevel("MultiLose");
     }
 
 

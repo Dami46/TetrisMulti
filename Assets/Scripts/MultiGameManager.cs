@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 
-public class MultiGameManager : Photon.MonoBehaviour
+public class MultiGameManager : Photon.PunBehaviour
 {
     public GameObject[] PlayerPrefabs;
     public GameObject StartCanvas;
@@ -14,15 +14,8 @@ public class MultiGameManager : Photon.MonoBehaviour
 
     //pause
     public bool isPaused = true;
-    public GameObject ReadyStatusP1;
-    public GameObject ReadyStatusP2;
-
-    public GameObject ReadyTextP1;
-    public GameObject ReadyTextP2;
-    [SerializeField] private int playersReady = 2;
-
-    private GameObject messageP1;
-    private GameObject messageP2;
+    private bool clientDisconnected = false;
+    public Text endScreen;
 
     // Start is called before the first frame update
     void Start()
@@ -35,16 +28,37 @@ public class MultiGameManager : Photon.MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        CheckUserInput();
-
-        if(playersReady == 2)
+        if (!clientDisconnected)
         {
-            Destroy(ReadyStatusP1);
-            Destroy(ReadyStatusP2);
-            isPaused = false;
-            Time.timeScale = 1;
+            if (PhotonNetwork.playerList.Length < 2)
+            {
+                endScreen.text = "Waiting for another player...";
+                endScreen.color = Color.yellow;
+                Time.timeScale = 0;
+                isPaused = true;
+            }
+            else
+            {
+                isPaused = false;
+                Time.timeScale = 1;
+                endScreen.text = "";
+            }
         }
     }
+
+    public override void OnPhotonPlayerDisconnected(PhotonPlayer otherPlayer)
+    {
+        base.OnPhotonPlayerDisconnected(otherPlayer);
+
+        int playerID = otherPlayer.ID == 1 ? 1 : 0;
+
+        clientDisconnected = true;
+        endScreen.text = "You won with score " + PlayerPrefabs[playerID].GetComponent<MultiGameLogic>().currentScore;
+        endScreen.color = Color.green;
+        Time.timeScale = 0;
+        isPaused = true;
+    }
+
 
     private void Awake()
     {
@@ -58,12 +72,10 @@ public class MultiGameManager : Photon.MonoBehaviour
         {
             case 1:
                 GameObject player1 =  PhotonNetwork.Instantiate(PlayerPrefabs[0].name, new Vector2(8.5f, 15), Quaternion.identity, 0);
-                PlayerP1Unready();
                 break;
 
             case 2:
                 GameObject player2 = PhotonNetwork.Instantiate(PlayerPrefabs[1].name, new Vector2(29.5f, 15), Quaternion.identity, 0);
-                PlayerP2Unready();
                 break;
 
         }
@@ -79,70 +91,5 @@ public class MultiGameManager : Photon.MonoBehaviour
         PhotonNetwork.LoadLevel("MultiLobby");
     }
 
-
-    void CheckUserInput()
-    {
-        //if(!photonView.isMine) { return; }
-        if (Input.GetKeyDown(KeyCode.P))
-        {
-            if (playersReady != 2)
-            {
-                if (PhotonNetwork.player.ID == 1)
-                {
-                    PlayerP1Ready();
-                }
-                else if (PhotonNetwork.player.ID == 2)
-                {
-                    PlayerP2Ready();
-                }
-            }
-        }
-    }
-
-    private void PlayerP1Ready()
-    {
-
-        //  audioSource = GetComponent<AudioSource>();
-        //  audioSource.Pause();
-        playersReady = playersReady + 1;
-        messageP1.GetComponent<Text>().text = "READY";
-        messageP1.GetComponent<Text>().color = Color.green;
-
-    }
-    private void PlayerP2Ready()
-    {
-        // audioSource = GetComponent<AudioSource>();
-        // audioSource.Play();
-        playersReady = playersReady + 1;
-        messageP2.GetComponent<Text>().text = "READY";
-        messageP2.GetComponent<Text>().color = Color.green;
-
-    }
-
-    [PunRPC]
-    private void PlayerP1Unready()
-    {
-        //  audioSource = GetComponent<AudioSource>();
-        //  audioSource.Pause();
-        playersReady = playersReady - 1;
-        messageP1 = Instantiate(ReadyTextP1, new Vector2(0, 0), Quaternion.identity);
-        messageP1.transform.SetParent(ReadyStatusP1.transform, false);
-        messageP1.GetComponent<Text>().text = "UNREADY";
-        messageP1.GetComponent<Text>().color = Color.red;
-
-    }
-
-    [PunRPC]
-    private void PlayerP2Unready()
-    {
-        //  audioSource = GetComponent<AudioSource>();
-        //  audioSource.Pause();
-        playersReady = playersReady - 1;
-        messageP2 = Instantiate(ReadyTextP2, new Vector2(0, 0), Quaternion.identity);
-        messageP2.transform.SetParent(ReadyStatusP2.transform, false);
-        messageP2.GetComponent<Text>().text = "UNREADY";
-        messageP2.GetComponent<Text>().color = Color.red;
-
-    }
 
 }
