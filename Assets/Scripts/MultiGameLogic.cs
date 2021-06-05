@@ -27,8 +27,7 @@ public class MultiGameLogic : MonoBehaviour
     public Text hud_Score;
     public Text hud_Level;
     public int currentScore = 0;
-
-
+    private int startingScore = 0;
 
     //level
     public int currentLevel = 0;
@@ -44,29 +43,57 @@ public class MultiGameLogic : MonoBehaviour
     private GameObject nextTetronimo;
     private bool gameStarted = false;
 
+    //pauza
+    public Text hud_Pause;
+    private GameObject message;
+
+    private int playersReady;
 
     // Start is called before the first frame update
     void Start()
     {
         currentScore = 0;
-        if(PhotonNetwork.player.ID == 1 & this.tag == "Playground P1"){
+        if (PhotonNetwork.player.ID == 1 & this.tag == "Playground P1")
+        {
+            //if (gameManager.playerP2Ready == true)
+            //{
+            //    GameObject.FindGameObjectWithTag("pauza P2").GetComponent<Text>().text = "Ready";
+            //    GameObject.FindGameObjectWithTag("pauza P2").GetComponent<Text>().color = Color.green;
+            //}
+
             hud_Score = GameObject.FindGameObjectWithTag("score_text P1").GetComponent<Text>();
             SpawnBlock(1);
         }
-        else if(PhotonNetwork.player.ID == 2 & this.tag == "Playground P2"){
+        else if (PhotonNetwork.player.ID == 2 & this.tag == "Playground P2")
+        {
+            //if (gameManager.playerP1Ready == true)
+            //{
+            //    GameObject.FindGameObjectWithTag("pauza P1").GetComponent<Text>().text = "Ready";
+            //    GameObject.FindGameObjectWithTag("pauza P1").GetComponent<Text>().color = Color.green;
+            //}
+
             hud_Score = GameObject.FindGameObjectWithTag("score_text P2").GetComponent<Text>();
             SpawnBlock(2);
         }
 
         hud_Level.text = "Level: 0";
         hud_Score.text = "Score: 0";
-        
+        gameManager = FindObjectOfType<MultiGameManager>();
+        GameObject.FindGameObjectWithTag(string.Format("pauza P{0}", PhotonNetwork.player.ID)).SetActive(true);
 
     }
 
     private void Update()
     {
-       
+        if (PhotonNetwork.playerList.Length == 2)
+        {
+            CheckUserInput();
+        }
+
+        if (gameManager.playerP1Ready && gameManager.playerP2Ready)
+        {
+            GetComponent<PhotonView>().RPC("ResumeGame", PhotonTargets.All);
+        }
     }
 
     void UpdateLevel()
@@ -88,9 +115,22 @@ public class MultiGameLogic : MonoBehaviour
         }
 
         UpdateScore();
-        UpdateUi();
         UpdateLevel();
         UpdateSpeed();
+    }
+
+    [PunRPC]
+    public void UpdateHighScore()
+    {
+        PlayerPrefs.SetInt("endScore", currentScore);
+        PlayerPrefs.Save();
+    }
+
+    [PunRPC]
+    public void UpdateHighLevel()
+    {
+        PlayerPrefs.SetInt("endLevel", currentLevel);
+        PlayerPrefs.Save();
     }
 
     bool IsLineComplete(int y)
@@ -164,7 +204,7 @@ public class MultiGameLogic : MonoBehaviour
             float guess = RandomTetronimo();
 
             if (playerID == 1)
-            {   
+            {
                 this.nextTetronimo = PhotonNetwork.Instantiate(this.blocks[Mathf.FloorToInt(guess)].name, new Vector2(8.5f, 30.5f), Quaternion.identity, 0);
             }
             else
@@ -232,8 +272,6 @@ public class MultiGameLogic : MonoBehaviour
     }
 
 
-
-
     public void GameOver()
     {
         PhotonNetwork.LeaveRoom();
@@ -269,20 +307,55 @@ public class MultiGameLogic : MonoBehaviour
             //audioSource.PlayOneShot(clearLineSound);
         }
 
+        GetComponent<PhotonView>().RPC("UpdateHighScore", PhotonTargets.All);
+        GetComponent<PhotonView>().RPC("UpdateHighLevel", PhotonTargets.All);
         GetComponent<PhotonView>().RPC("UpdatePoints", PhotonTargets.All, PhotonNetwork.player.ID, currentScore, currentLevel);
     }
 
-    public void UpdateUi()
-    {
-        hud_Score.text = "Score: " + currentScore.ToString();
-        hud_Level.text = "Level: " + currentLevel.ToString();
-    }
-
     [PunRPC]
-    private void UpdatePoints(int player, int points, int level){
+    private void UpdatePoints(int player, int points, int level)
+    {
         GameObject.FindGameObjectWithTag(string.Format("score_text P{0}", player)).GetComponent<Text>().text = "Score: " + points.ToString();
         GameObject.FindGameObjectWithTag(string.Format("level_text P{0}", player)).GetComponent<Text>().text = "Level: " + level.ToString();
     }
 
-  
+
+
+    public void CheckUserInput()
+    {
+        if (!GetComponent<PhotonView>().isMine) { return; }
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            GetComponent<PhotonView>().RPC("PlayerReady", PhotonTargets.All, PhotonNetwork.player.ID);
+        }
+    }
+
+    [PunRPC]
+    private void PlayerReady(int player)
+    {
+        if (PhotonNetwork.player.ID == 1 & this.tag == "Playground P1")
+        {
+            gameManager.playerP1Ready = true;
+        }
+        else
+        {
+            gameManager.playerP2Ready = true;
+        }
+        playersReady = playersReady + 1;
+        GameObject.FindGameObjectWithTag(string.Format("pauza P{0}", player)).GetComponent<Text>().text = "Ready";
+        GameObject.FindGameObjectWithTag(string.Format("pauza P{0}", player)).GetComponent<Text>().color = Color.green;
+    }
+
+
+    [PunRPC]
+    private void ResumeGame()
+    {
+        if (GameObject.FindGameObjectWithTag("pauza P1") != null && GameObject.FindGameObjectWithTag("pauza P1") != null)
+        {
+            GameObject.FindGameObjectWithTag("pauza P1").SetActive(false);
+            GameObject.FindGameObjectWithTag("pauza P2").SetActive(false);
+        }
+        gameManager.isPaused = false;
+        Time.timeScale = 1;
+    }
 }

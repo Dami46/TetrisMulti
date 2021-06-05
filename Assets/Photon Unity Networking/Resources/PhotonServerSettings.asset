@@ -32,14 +32,15 @@ MonoBehaviour:
   - DestroyRpc
   - InstantiateRpc
   - PickupItemInit
-  - PlayerP1Ready
-  - PlayerP1Unready
-  - PlayerP2Ready
-  - PlayerP2Unready
   - PunPickup
   - PunPickupSimple
   - PunRespawn
   - RequestForPickupItems
   - RequestForPickupTimes
   - UpdatePoints
+  - UpdateHighScore
+  - PlayerReady
+  - PlayerUnready
+  - UpdateHighLevel
+  - ResumeGame
   DisableAutoOpenWizard: 1

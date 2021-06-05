@@ -556,6 +556,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   loseText: {fileID: 771900059}
+  scoreText: {fileID: 727305818983159414}
+  levelText: {fileID: 6513302044788932662}
 --- !u!1 &1939694040
 GameObject:
   m_ObjectHideFlags: 0

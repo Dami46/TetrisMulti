@@ -11,12 +11,12 @@ TagManager:
   - GameHud
   - Playground P2
   - Playground
-  - Pauza
-  - PauzaP2
   - score_text P1
   - score_text P2
   - level_text P1
   - level_text P2
+  - pauza P1
+  - pauza P2
   layers:
   - Default
   - TransparentFX

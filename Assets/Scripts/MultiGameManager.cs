@@ -17,6 +17,9 @@ public class MultiGameManager : Photon.PunBehaviour
     private bool clientDisconnected = false;
     public Text endScreen;
 
+    public bool playerP1Ready = false;
+    public bool playerP2Ready = false;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -39,8 +42,7 @@ public class MultiGameManager : Photon.PunBehaviour
             }
             else
             {
-                isPaused = false;
-                Time.timeScale = 1;
+               
                 endScreen.text = "";
             }
         }
@@ -53,7 +55,7 @@ public class MultiGameManager : Photon.PunBehaviour
         int playerID = otherPlayer.ID == 1 ? 1 : 0;
 
         clientDisconnected = true;
-        endScreen.text = "You won with score " + PlayerPrefabs[playerID].GetComponent<MultiGameLogic>().currentScore;
+        endScreen.text = "YOU WON !!!! ";
         endScreen.color = Color.green;
         Time.timeScale = 0;
         isPaused = true;
