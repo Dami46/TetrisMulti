@@ -55,23 +55,11 @@ public class MultiGameLogic : MonoBehaviour
         currentScore = 0;
         if (PhotonNetwork.player.ID == 1 & this.tag == "Playground P1")
         {
-            //if (gameManager.playerP2Ready == true)
-            //{
-            //    GameObject.FindGameObjectWithTag("pauza P2").GetComponent<Text>().text = "Ready";
-            //    GameObject.FindGameObjectWithTag("pauza P2").GetComponent<Text>().color = Color.green;
-            //}
-
             hud_Score = GameObject.FindGameObjectWithTag("score_text P1").GetComponent<Text>();
             SpawnBlock(1);
         }
         else if (PhotonNetwork.player.ID == 2 & this.tag == "Playground P2")
         {
-            //if (gameManager.playerP1Ready == true)
-            //{
-            //    GameObject.FindGameObjectWithTag("pauza P1").GetComponent<Text>().text = "Ready";
-            //    GameObject.FindGameObjectWithTag("pauza P1").GetComponent<Text>().color = Color.green;
-            //}
-
             hud_Score = GameObject.FindGameObjectWithTag("score_text P2").GetComponent<Text>();
             SpawnBlock(2);
         }
@@ -90,7 +78,7 @@ public class MultiGameLogic : MonoBehaviour
             CheckUserInput();
         }
 
-        if (gameManager.playerP1Ready && gameManager.playerP2Ready)
+        if (gameManager.playerP1Ready && gameManager.playerP2Ready && gameManager.isPaused)
         {
             GetComponent<PhotonView>().RPC("ResumeGame", PhotonTargets.All);
         }
